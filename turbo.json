@@ -16,6 +16,10 @@
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "web#build": {
+      "dependsOn": ["^build"],
+      "env": ["NODE_ENV"]
     }
   }
 }
