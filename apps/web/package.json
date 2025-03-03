@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint --max-warnings 0",
     "check-types": "tsc --noEmit",
-    "prettify": "prettier --write \"**/*.{ts,tsx,md}\""
+    "prettify": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "favicon:generate": "./lib/generate-icons.sh public/logo.svg public/static/favicons"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.3",
