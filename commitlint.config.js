@@ -42,8 +42,7 @@ module.exports = {
         "deploy", // Changes to the deployment
         "blog", // Changes to the blog
         "projects", // Changes to the projects
-        "pages", // Changes to the pages
-        "website", // Changes to the website
+        "web", // Changes to the web app
       ],
     ],
   },
