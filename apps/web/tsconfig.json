@@ -8,11 +8,10 @@
     ],
     "baseUrl": ".",
     "paths": {
+      "@/components": ["components"],
       "@/components/*": ["components/*"],
-      "@/lib/*": ["lib/*"],
-      "@/utils/*": ["utils/*"],
-      "@/hooks/*": ["hooks/*"],
-      "@/utils": ["utils"]
+      "@/lib": ["lib"],
+      "@/lib/*": ["lib/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", "next-env.d.ts", "next.config.js", ".next/types/**/*.ts"],
