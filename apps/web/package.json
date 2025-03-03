@@ -13,6 +13,7 @@
     "favicon:generate": "./lib/generate-icons.sh public/logo.svg public/static/favicons"
   },
   "dependencies": {
+    "@next/third-parties": "^15.2.0",
     "@radix-ui/react-avatar": "^1.1.3",
     "@radix-ui/react-collapsible": "^1.1.3",
     "@radix-ui/react-dialog": "^1.1.6",
