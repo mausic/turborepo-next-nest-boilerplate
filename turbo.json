@@ -19,7 +19,7 @@
     },
     "web#build": {
       "dependsOn": ["^build"],
-      "env": ["NODE_ENV"]
+      "env": ["NODE_ENV", "BASE_PATH"]
     }
   }
 }

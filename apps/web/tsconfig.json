@@ -11,7 +11,8 @@
       "@/components": ["components"],
       "@/components/*": ["components/*"],
       "@/lib": ["lib"],
-      "@/lib/*": ["lib/*"]
+      "@/lib/*": ["lib/*"],
+      "@/config/*": ["config/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", "next-env.d.ts", "next.config.js", ".next/types/**/*.ts"],
