@@ -35,15 +35,21 @@ import {
 import { createUser } from "@/actions/user";
 import Link from "next/link";
 
-const SignUpSchema = z.object({
-  firstName: z.string().nonempty(),
-  lastName: z.string().nonempty(),
-  phoneNumber: z.string().nonempty(),
-  emailAddress: z.string().email(),
-  password: z.string().min(8),
-  confirmPassword: z.string().min(8),
-  organization: z.string().nonempty(),
-});
+const SignUpSchema = z
+  .object({
+    firstName: z.string().nonempty(),
+    lastName: z.string().nonempty(),
+    phoneNumber: z.string().nonempty(),
+    emailAddress: z.string().email(),
+    password: z.string().min(8, { message: "Password must be at least 8 characters long" }),
+    confirmPassword: z.string().min(8),
+    organization: z.string().nonempty(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  });
+
 type ISignUpSchema = z.infer<typeof SignUpSchema>;
 
 const SignUpConfirmSchema = z.object({
@@ -407,7 +413,7 @@ export default function SignUpPage() {
                 )}
               />
               <Separator />
-              <Button type="submit" disabled={!form.formState.isValid || isLoading}>
+              <Button type="submit" disabled={isLoading}>
                 {isLoading ? <Icons.spinner className="size-4 animate-spin" /> : "Sign up"}
               </Button>
             </form>
