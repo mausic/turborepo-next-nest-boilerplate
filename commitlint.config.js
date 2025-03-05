@@ -43,6 +43,7 @@ module.exports = {
         "blog", // Changes to the blog
         "projects", // Changes to the projects
         "web", // Changes to the web app
+        "db", // Changes to the database
       ],
     ],
   },

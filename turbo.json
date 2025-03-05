@@ -1,6 +1,8 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "globalEnv": ["NODE_ENV", "DATABASE_URL"],
+  "envMode": "strict",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -15,7 +17,8 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "dependsOn": ["^dev"]
     },
     "web#build": {
       "dependsOn": ["^build"],

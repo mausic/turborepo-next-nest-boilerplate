@@ -1,0 +1,16 @@
+# Description: This file is used to define the services that will be used in the development environment.
+
+name: db-dev
+
+services:
+  # Postgres database
+  db:
+    image: postgres:16.4
+    restart: always
+    shm_size: 256mb
+    ports:
+      - 5432:5432
+    env_file:
+      - .env
+    volumes:
+      - ./db_data:/var/lib/postgresql/data

@@ -3,3 +3,4 @@ public/
 .env
 .env.example
 pnpm-lock.yaml
+.prisma

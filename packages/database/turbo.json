@@ -1,0 +1,27 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "db:run": {
+      "env": ["POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_DB"]
+    },
+    "db:generate": {
+      "cache": false,
+      "env": ["DATABASE_URL"]
+    },
+    "db:migrate": {
+      "cache": false,
+      "env": ["DATABASE_URL"],
+      "persistent": true
+    },
+    "db:deploy": {
+      "cache": false,
+      "env": ["DATABASE_URL"]
+    },
+    "dev": {
+      "dependsOn": ["db:run", "db:generate"]
+    },
+    "deploy": {
+      "dependsOn": ["db:deploy", "db:generate"]
+    }
+  }
+}

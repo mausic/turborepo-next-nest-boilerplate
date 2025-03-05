@@ -1,0 +1,29 @@
+{
+  "name": "@repo/db",
+  "version": "1.0.0",
+  "description": "A prisma database package",
+  "keywords": [],
+  "author": "Maksym Ryndia",
+  "private": true,
+  "license": "UNLICENSED",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:studio": "prisma studio",
+    "db:run": "docker compose -f ./docker-compose.dev.yml up -d"
+  },
+  "dependencies": {
+    "@prisma/client": "6.4.1"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.13.9",
+    "prisma": "catalog:prisma",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}
