@@ -1,243 +1,427 @@
 "use client";
-import * as Clerk from "@clerk/elements/common";
-import * as SignUp from "@clerk/elements/sign-up";
-import { Button } from "@/components/ui/button";
+
+import * as React from "react";
+import { useSignUp } from "@clerk/nextjs";
+import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { REGEXP_ONLY_DIGITS } from "input-otp";
+import { useRouter, useSearchParams } from "next/navigation";
+import { MailIcon, LockIcon, PhoneIcon, BuildingIcon } from "lucide-react";
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Icons } from "@/components/ui/icons";
-import { cn } from "@/lib/utils";
-import { MailIcon, LockIcon, PhoneIcon } from "lucide-react";
-import { OrganizationSwitcher } from "@clerk/nextjs";
+  Input,
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+  Icons,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  Separator,
+  CardFooter,
+} from "@/components/ui";
+import { createUser } from "@/actions/user";
+import Link from "next/link";
+
+const SignUpSchema = z.object({
+  firstName: z.string().nonempty(),
+  lastName: z.string().nonempty(),
+  phoneNumber: z.string().nonempty(),
+  emailAddress: z.string().email(),
+  password: z.string().min(8),
+  confirmPassword: z.string().min(8),
+  organization: z.string().nonempty(),
+});
+type ISignUpSchema = z.infer<typeof SignUpSchema>;
+
+const SignUpConfirmSchema = z.object({
+  code: z.string().length(6),
+});
+type ISignUpConfirmSchema = z.infer<typeof SignUpConfirmSchema>;
 
 export default function SignUpPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { isLoaded, signUp, setActive } = useSignUp();
+  const [verifying, setVerifying] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const form = useForm<ISignUpSchema>({
+    resolver: zodResolver(SignUpSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      phoneNumber: "",
+      emailAddress: "",
+      password: "",
+      confirmPassword: "",
+      organization: "",
+    },
+  });
+  const formConfirm = useForm<ISignUpConfirmSchema>({
+    resolver: zodResolver(SignUpConfirmSchema),
+    defaultValues: {
+      code: "",
+    },
+  });
+  /**
+   * Handle sign up form submission
+   * @param data form data with sign up details
+   */
+  const onSignup = async (data: ISignUpSchema) => {
+    if (!isLoaded) {
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await signUp.create({
+        emailAddress: data.emailAddress,
+        password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        unsafeMetadata: {
+          organization: data.organization,
+          phoneNumber: data.phoneNumber,
+        },
+      });
+      // Send the user an email with the verification code
+      await signUp.prepareEmailAddressVerification({
+        strategy: "email_code",
+      });
+      // Set 'verifying' true to display second form
+      // and capture the OTP code
+      setVerifying(true);
+    } catch (e) {
+      // See https://clerk.com/docs/custom-flows/error-handling
+      // for more info on error handling
+      if (isClerkAPIResponseError(e)) {
+        e.errors.forEach((error) => {
+          switch (error.code) {
+            case "form_identifier_exists":
+              form.setError("emailAddress", {
+                message: error.longMessage,
+                type: "validate",
+              });
+              break;
+            case "form_password_length_too_short":
+              form.setError("password", {
+                message: error.longMessage,
+                type: "minLength",
+              });
+              break;
+            case "form_password_length_too_long":
+              form.setError("password", {
+                message: error.longMessage,
+                type: "maxLength",
+              });
+              break;
+            default:
+              console.error(JSON.stringify(e, null, 2));
+              toast.error(error.longMessage);
+              break;
+          }
+        });
+      } else {
+        console.error(JSON.stringify(e, null, 2));
+        toast.error("An error occurred. Please try again later.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  /**
+   * Handle verification code form submission
+   * @param data form data with verification code
+   */
+  const onCodeSubmit = async (data: ISignUpConfirmSchema) => {
+    if (!isLoaded) {
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const signUpAttempt = await signUp.attemptEmailAddressVerification({
+        code: data.code,
+      });
+      // If verification was completed, set the session to active
+      // and redirect the user
+      if (signUpAttempt.status === "complete") {
+        // create user entry in the database
+        await createUser({
+          firstName: form.getValues().firstName,
+          lastName: form.getValues().lastName,
+          email: form.getValues().emailAddress,
+          phoneNumber: form.getValues().phoneNumber,
+          organization: form.getValues().organization,
+          clerkId: signUpAttempt.createdUserId!,
+        });
+        // set active web session
+        await setActive({ session: signUpAttempt.createdSessionId });
+        // redirect user to the page they were on
+        const route = searchParams.get("redirect_url") || "/";
+        router.push(route);
+      } else {
+        toast.error("Error verifying email address. Please try again.");
+      }
+    } catch (e) {
+      if (isClerkAPIResponseError(e)) {
+        e.errors.forEach((error) => {
+          switch (error.code) {
+            case "form_code_incorrect":
+              formConfirm.setError("code", {
+                message: error.longMessage,
+                type: "validate",
+              });
+              break;
+            default:
+              console.error(JSON.stringify(e, null, 2));
+              toast.error(error.longMessage);
+              break;
+          }
+        });
+      } else {
+        console.error(JSON.stringify(e, null, 2));
+        toast.error("An error occurred. Please try again later.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (verifying) {
+    return (
+      <Card className="w-full sm:w-96">
+        <CardHeader>
+          <CardTitle>Verify your email</CardTitle>
+          <CardDescription>Use the verification code sent to your email address</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...formConfirm}>
+            <form onSubmit={formConfirm.handleSubmit(onCodeSubmit)} className="grid gap-y-4">
+              <FormField
+                control={formConfirm.control}
+                name="code"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col items-center justify-center">
+                    <FormControl>
+                      <InputOTP
+                        maxLength={6}
+                        {...field}
+                        autoFocus={true}
+                        pattern={REGEXP_ONLY_DIGITS}>
+                        <InputOTPGroup>
+                          <InputOTPSlot index={0} autoFocus />
+                          <InputOTPSlot index={1} />
+                          <InputOTPSlot index={2} />
+                        </InputOTPGroup>
+                        <InputOTPSeparator />
+                        <InputOTPGroup>
+                          <InputOTPSlot index={3} />
+                          <InputOTPSlot index={4} />
+                          <InputOTPSlot index={5} />
+                        </InputOTPGroup>
+                      </InputOTP>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Separator />
+              <Button type="submit" disabled={!formConfirm.formState.isValid || isLoading}>
+                {isLoading ? <Icons.spinner className="size-4 animate-spin" /> : "Continue"}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    );
+  }
   return (
     <div className="grid w-full grow items-center px-4 sm:justify-center">
-      <SignUp.Root>
-        <Clerk.Loading>
-          {(isGlobalLoading) => (
-            <>
-              <SignUp.Step name="start">
-                <Card className="w-full sm:w-96">
-                  <CardHeader>
-                    <CardTitle>Create your account</CardTitle>
-                    <CardDescription>
-                      Welcome! Please fill in the details to get started.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="grid gap-y-4">
-                    <div className="grid gap-x-4 grid-cols-2">
-                      <Clerk.Field name="firstName" className="space-y-2">
-                        <Clerk.Label asChild>
-                          <Label>First name</Label>
-                        </Clerk.Label>
-                        <Clerk.Input type="text" required asChild>
-                          <Input type="text" autoComplete="given-name" autoCapitalize="words" />
-                        </Clerk.Input>
-                        <Clerk.FieldError className="block text-sm text-destructive" />
-                      </Clerk.Field>
-                      <Clerk.Field name="lastName" className="space-y-2">
-                        <Clerk.Label asChild>
-                          <Label>Last name</Label>
-                        </Clerk.Label>
-                        <Clerk.Input type="text" required asChild>
-                          <Input type="text" autoComplete="family-name" autoCapitalize="words" />
-                        </Clerk.Input>
-                        <Clerk.FieldError className="block text-sm text-destructive" />
-                      </Clerk.Field>
-                    </div>
-                    <Clerk.Field name="phoneNumber" className="space-y-2">
-                      <Clerk.Label asChild>
-                        <Label>Phone number</Label>
-                      </Clerk.Label>
+      <Card className="w-full sm:w-96">
+        <CardHeader>
+          <CardTitle>Create your account</CardTitle>
+          <CardDescription>Welcome! Please fill in the details to get started.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSignup)} className="grid gap-y-4">
+              <div className="grid gap-x-4 grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>First name</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          autoComplete="given-name"
+                          autoCapitalize="words"
+                          placeholder="John"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last name</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          autoComplete="family-name"
+                          autoCapitalize="words"
+                          placeholder="Doe"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={form.control}
+                name="organization"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Organization</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <BuildingIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                        <Input
+                          type="text"
+                          autoComplete="organization"
+                          placeholder="ACME Corp"
+                          className="pl-10"
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone number</FormLabel>
+                    <FormControl>
                       <div className="relative">
                         <PhoneIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-                        <Clerk.Input type="tel" required asChild>
-                          <Input className="pl-10" autoComplete="tel" />
-                        </Clerk.Input>
+                        <Input
+                          type="tel"
+                          autoComplete="tel"
+                          placeholder="+1234567890"
+                          className="pl-10"
+                          {...field}
+                        />
                       </div>
-                      <Clerk.FieldError className="block text-sm text-destructive" />
-                    </Clerk.Field>
-                    <Clerk.Field name="emailAddress" className="space-y-2">
-                      <Clerk.Label asChild>
-                        <Label>Email address</Label>
-                      </Clerk.Label>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="emailAddress"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email address</FormLabel>
+                    <FormControl>
                       <div className="relative">
                         <MailIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-                        <Clerk.Input type="email" required asChild>
-                          <Input className="pl-10" />
-                        </Clerk.Input>
+                        <Input
+                          type="email"
+                          autoComplete="email"
+                          placeholder="mailbox@mail.com"
+                          className="pl-10"
+                          {...field}
+                        />
                       </div>
-                      <Clerk.FieldError className="block text-sm text-destructive" />
-                    </Clerk.Field>
-                    <Clerk.Field name="password" className="space-y-2">
-                      <Clerk.Label asChild>
-                        <Label>Password</Label>
-                      </Clerk.Label>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
                       <div className="relative">
                         <LockIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-                        <Clerk.Input type="password" required asChild>
-                          <Input className="pl-10" type="password" autoComplete="new-password" />
-                        </Clerk.Input>
+                        <Input
+                          type="password"
+                          autoComplete="new-password"
+                          placeholder="••••••••"
+                          className="pl-10"
+                          {...field}
+                        />
                       </div>
-                      <Clerk.FieldError className="block text-sm text-destructive" />
-                    </Clerk.Field>
-                    <Clerk.Field name="confirmPassword" className="space-y-2">
-                      <Clerk.Label asChild>
-                        <Label>Confirm Password</Label>
-                      </Clerk.Label>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
                       <div className="relative">
                         <LockIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-                        <Clerk.Input type="password" required asChild>
-                          <Input className="pl-10" type="password" autoComplete="new-password" />
-                        </Clerk.Input>
+                        <Input
+                          type="password"
+                          autoComplete="new-password"
+                          placeholder="••••••••"
+                          className="pl-10"
+                          {...field}
+                        />
                       </div>
-                      <Clerk.FieldError className="block text-sm text-destructive" />
-                    </Clerk.Field>
-                  </CardContent>
-                  <CardFooter>
-                    <div className="grid w-full gap-y-4">
-                      <SignUp.Captcha className="empty:hidden" />
-                      <SignUp.Action submit asChild>
-                        <Button disabled={isGlobalLoading}>
-                          <Clerk.Loading>
-                            {(isLoading) => {
-                              return isLoading ? (
-                                <Icons.spinner className="size-4 animate-spin" />
-                              ) : (
-                                "Continue"
-                              );
-                            }}
-                          </Clerk.Loading>
-                        </Button>
-                      </SignUp.Action>
-                      <Button variant="link" size="sm" asChild>
-                        <Clerk.Link navigate="sign-in">Already have an account? Sign in</Clerk.Link>
-                      </Button>
-                    </div>
-                  </CardFooter>
-                </Card>
-              </SignUp.Step>
-
-              {/* MAY BE USED FOR ADDITIONAL USER DATA COLLECTION */}
-              {/* onboarding, where did you come from, where do you work */}
-              <SignUp.Step name="continue">
-                <Card className="w-full sm:w-96">
-                  <CardHeader>
-                    <CardTitle>Continue registration</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <OrganizationSwitcher createOrganizationMode="modal" />
-                  </CardContent>
-                  <CardFooter>
-                    <div className="grid w-full gap-y-4">
-                      <SignUp.Action submit asChild>
-                        <Button disabled={isGlobalLoading}>
-                          <Clerk.Loading>
-                            {(isLoading) => {
-                              return isLoading ? (
-                                <Icons.spinner className="size-4 animate-spin" />
-                              ) : (
-                                "Continue"
-                              );
-                            }}
-                          </Clerk.Loading>
-                        </Button>
-                      </SignUp.Action>
-                    </div>
-                  </CardFooter>
-                </Card>
-              </SignUp.Step>
-
-              <SignUp.Step name="verifications">
-                <SignUp.Strategy name="email_code">
-                  <Card className="w-full sm:w-96">
-                    <CardHeader>
-                      <CardTitle>Verify your email</CardTitle>
-                      <CardDescription>
-                        Use the verification link sent to your email address
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid gap-y-4">
-                      <div className="grid items-center justify-center gap-y-2">
-                        <Clerk.Field name="code" className="space-y-2">
-                          <Clerk.Label className="sr-only">Email address</Clerk.Label>
-                          <div className="flex justify-center text-center">
-                            <Clerk.Input
-                              type="otp"
-                              className="flex justify-center has-[:disabled]:opacity-50"
-                              autoSubmit
-                              render={({ value, status }) => {
-                                return (
-                                  <div
-                                    data-status={status}
-                                    className={cn(
-                                      "relative flex size-10 items-center justify-center border-y border-r border-input text-sm transition-all first:rounded-l-md first:border-l last:rounded-r-md",
-                                      {
-                                        "z-10 ring-2 ring-ring ring-offset-background":
-                                          status === "cursor" || status === "selected",
-                                      },
-                                    )}>
-                                    {value}
-                                    {status === "cursor" && (
-                                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                                        <div className="animate-caret-blink h-4 w-px bg-foreground duration-1000" />
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              }}
-                            />
-                          </div>
-                          <Clerk.FieldError className="block text-center text-sm text-destructive" />
-                        </Clerk.Field>
-                        <SignUp.Action
-                          asChild
-                          resend
-                          className="text-muted-foreground"
-                          fallback={({ resendableAfter }) => (
-                            <Button variant="link" size="sm" disabled>
-                              Didn&apos;t receive a code? Resend (
-                              <span className="tabular-nums">{resendableAfter}</span>)
-                            </Button>
-                          )}>
-                          <Button type="button" variant="link" size="sm">
-                            Didn&apos;t receive a code? Resend
-                          </Button>
-                        </SignUp.Action>
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <div className="grid w-full gap-y-4">
-                        <SignUp.Action submit asChild>
-                          <Button disabled={isGlobalLoading}>
-                            <Clerk.Loading>
-                              {(isLoading) => {
-                                return isLoading ? (
-                                  <Icons.spinner className="size-4 animate-spin" />
-                                ) : (
-                                  "Continue"
-                                );
-                              }}
-                            </Clerk.Loading>
-                          </Button>
-                        </SignUp.Action>
-                      </div>
-                    </CardFooter>
-                  </Card>
-                </SignUp.Strategy>
-              </SignUp.Step>
-            </>
-          )}
-        </Clerk.Loading>
-      </SignUp.Root>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Separator />
+              <Button type="submit" disabled={!form.formState.isValid || isLoading}>
+                {isLoading ? <Icons.spinner className="size-4 animate-spin" /> : "Sign up"}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+        <CardFooter className="flex items-center justify-center">
+          <span className="text-sm text-muted-foreground">
+            Already have an account?{" "}
+            <Link href={`/auth/sign-in?${searchParams}`} className="underline text-blue-400">
+              Sign in
+            </Link>
+          </span>
+        </CardFooter>
+      </Card>
     </div>
   );
 }
