@@ -1,9 +1,11 @@
 "use client";
 
+import * as React from "react";
 import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles } from "lucide-react";
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -11,25 +13,26 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar";
+} from "@/components/ui";
+import { useClerk } from "@clerk/nextjs";
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string;
-    email: string;
-    avatar: string;
-  };
-}) {
+export function NavUser() {
   const { isMobile } = useSidebar();
-
+  const { signOut, user: clerkUser } = useClerk();
+  /**
+   * User data from session object
+   */
+  const user = React.useMemo(() => {
+    return {
+      email: clerkUser?.primaryEmailAddress?.emailAddress || "",
+      name: clerkUser?.fullName || "",
+      avatar: clerkUser?.imageUrl || "",
+    };
+  }, [clerkUser]);
   return (
     <SidebarMenu>
       <SidebarMenuItem>
