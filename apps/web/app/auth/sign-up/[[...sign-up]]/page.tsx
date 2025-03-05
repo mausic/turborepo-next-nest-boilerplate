@@ -421,7 +421,7 @@ export default function SignUpPage() {
         </CardContent>
         <CardFooter className="flex items-center justify-center">
           <span className="text-sm text-muted-foreground">
-            Already have an account?{" "}
+            Already have an account?&nbsp;
             <Link href={`/auth/sign-in?${searchParams}`} className="underline text-blue-400">
               Sign in
             </Link>
