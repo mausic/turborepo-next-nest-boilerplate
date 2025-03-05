@@ -33,6 +33,12 @@ export function NavUser() {
       avatar: clerkUser?.imageUrl || "",
     };
   }, [clerkUser]);
+  /**
+   * Handle user logout
+   */
+  const onLogoOut = async () => {
+    signOut();
+  };
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -92,7 +98,7 @@ export function NavUser() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={onLogoOut}>
               <LogOut />
               Log out
             </DropdownMenuItem>
