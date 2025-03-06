@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useSignUp } from "@clerk/nextjs";
+import { useOrganizationList, useSession, useSignUp } from "@clerk/nextjs";
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -63,6 +63,7 @@ type ISignUpConfirmSchema = z.infer<typeof SignUpConfirmSchema>;
 
 export default function SignUpPage() {
   const router = useRouter();
+  const { session } = useSession();
   const { urlWithSearchParams } = useUrlWithSearchParams();
   const { redirectUrl } = useRedirectUrl();
   const { isLoaded, signUp, setActive } = useSignUp();
@@ -207,6 +208,12 @@ export default function SignUpPage() {
       setIsLoading(false);
     }
   };
+
+  React.useEffect(() => {
+    if (session) {
+      router.push(redirectUrl);
+    }
+  });
 
   if (verifying) {
     return (
@@ -370,7 +377,7 @@ export default function SignUpPage() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <InputPassword {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
