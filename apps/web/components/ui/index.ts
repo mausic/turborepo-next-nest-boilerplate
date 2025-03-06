@@ -16,3 +16,4 @@ export * from "./sheet";
 export * from "./sidebar";
 export * from "./sonner";
 export * from "./tooltip";
+export * from "./dialog";
