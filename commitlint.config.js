@@ -46,6 +46,7 @@ module.exports = {
         "db", // Changes to the database
         "typescript", // Changes to the TypeScript configuration files
         "eslint", // Changes to the ESLint configuration files
+        "api", // Changes to the API app
       ],
     ],
   },
