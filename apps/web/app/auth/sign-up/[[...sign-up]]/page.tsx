@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { PhoneIcon, BuildingIcon } from "lucide-react";
 import {
   Button,
@@ -36,6 +36,8 @@ import {
 } from "@/components/ui";
 import { createUser } from "@/actions/user";
 import Link from "next/link";
+import { useUrlWithSearchParams } from "@/lib/hooks/use-url-with-search-params";
+import { useRedirectUrl } from "@/lib/hooks/use-redirect-url";
 
 const SignUpSchema = z
   .object({
@@ -61,7 +63,8 @@ type ISignUpConfirmSchema = z.infer<typeof SignUpConfirmSchema>;
 
 export default function SignUpPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const { urlWithSearchParams } = useUrlWithSearchParams();
+  const { redirectUrl } = useRedirectUrl();
   const { isLoaded, signUp, setActive } = useSignUp();
   const [verifying, setVerifying] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -176,8 +179,7 @@ export default function SignUpPage() {
         // set active web session
         await setActive({ session: signUpAttempt.createdSessionId });
         // redirect user to the page they were on
-        const route = searchParams.get("redirect_url") || "/";
-        router.push(route);
+        router.push(redirectUrl);
       } else {
         toast.error("Error verifying email address. Please try again.");
       }
@@ -387,6 +389,8 @@ export default function SignUpPage() {
                   </FormItem>
                 )}
               />
+              {/* CAPTCHA Widget */}
+              <div id="clerk-captcha"></div>
               <Separator />
               <Button type="submit" disabled={isLoading}>
                 {isLoading ? <Icons.spinner className="size-4 animate-spin" /> : "Sign up"}
@@ -397,7 +401,7 @@ export default function SignUpPage() {
         <CardFooter className="flex items-center justify-center">
           <span className="text-sm text-muted-foreground">
             Already have an account?&nbsp;
-            <Link href={`/auth/sign-in?${searchParams}`} className="underline text-blue-400">
+            <Link href={urlWithSearchParams("/auth/sign-in")} className="underline text-blue-400">
               Sign in
             </Link>
           </span>

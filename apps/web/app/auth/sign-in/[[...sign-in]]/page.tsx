@@ -3,8 +3,8 @@
 import * as React from "react";
 import { siteConfig } from "@/config/site-config";
 import { z } from "zod";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useSignIn } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { useSession, useSignIn } from "@clerk/nextjs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -29,6 +29,8 @@ import {
 import Link from "next/link";
 import { toast } from "sonner";
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
+import { useUrlWithSearchParams } from "@/lib/hooks/use-url-with-search-params";
+import { useRedirectUrl } from "@/lib/hooks/use-redirect-url";
 
 const SignInSchema = z.object({
   email: z.string().email(),
@@ -38,7 +40,9 @@ type ISignInSchema = z.infer<typeof SignInSchema>;
 
 export default function SignInPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const { session } = useSession();
+  const { urlWithSearchParams } = useUrlWithSearchParams();
+  const { redirectUrl } = useRedirectUrl();
   const { isLoaded, signIn, setActive } = useSignIn();
   const [isLoading, setIsLoading] = React.useState(false);
   const form = useForm<ISignInSchema>({
@@ -61,8 +65,7 @@ export default function SignInPage() {
       });
       if (signInAttempt.status === "complete") {
         await setActive({ session: signInAttempt.createdSessionId });
-        const route = searchParams.get("redirect_url") || "/";
-        router.push(route);
+        router.push(redirectUrl);
       } else {
         console.error("sign in failed", JSON.stringify(signInAttempt, null, 2));
         toast.error("Sign in failed. Please contact support");
@@ -89,6 +92,12 @@ export default function SignInPage() {
       setIsLoading(false);
     }
   };
+
+  React.useEffect(() => {
+    if (session) {
+      router.push(redirectUrl);
+    }
+  }, [redirectUrl, router, session]);
 
   return (
     <Card className="w-full sm:w-96">
@@ -135,9 +144,7 @@ export default function SignInPage() {
       <CardFooter className="flex items-center justify-center">
         <div className="text-sm text-muted-foreground">
           Don&apos;t have an account?&nbsp;
-          <Link
-            href={`/auth/sign-up?${searchParams.toString()}`}
-            className="underline text-blue-400">
+          <Link href={urlWithSearchParams("/auth/sign-up")} className="underline text-blue-400">
             Sign up
           </Link>
         </div>
