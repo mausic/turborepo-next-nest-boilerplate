@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { useRouter, useSearchParams } from "next/navigation";
-import { MailIcon, LockIcon, PhoneIcon, BuildingIcon } from "lucide-react";
+import { PhoneIcon, BuildingIcon } from "lucide-react";
 import {
   Button,
   Card,
@@ -31,6 +31,8 @@ import {
   FormMessage,
   Separator,
   CardFooter,
+  InputPassword,
+  InputEmail,
 } from "@/components/ui";
 import { createUser } from "@/actions/user";
 import Link from "next/link";
@@ -353,16 +355,7 @@ export default function SignUpPage() {
                   <FormItem>
                     <FormLabel>Email address</FormLabel>
                     <FormControl>
-                      <div className="relative">
-                        <MailIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-                        <Input
-                          type="email"
-                          autoComplete="email"
-                          placeholder="mailbox@mail.com"
-                          className="pl-10"
-                          {...field}
-                        />
-                      </div>
+                      <InputEmail {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -375,16 +368,7 @@ export default function SignUpPage() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <div className="relative">
-                        <LockIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-                        <Input
-                          type="password"
-                          autoComplete="new-password"
-                          placeholder="••••••••"
-                          className="pl-10"
-                          {...field}
-                        />
-                      </div>
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -397,16 +381,7 @@ export default function SignUpPage() {
                   <FormItem>
                     <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
-                      <div className="relative">
-                        <LockIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-                        <Input
-                          type="password"
-                          autoComplete="new-password"
-                          placeholder="••••••••"
-                          className="pl-10"
-                          {...field}
-                        />
-                      </div>
+                      <InputPassword {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

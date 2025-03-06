@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { siteConfig } from "@/config/site-config";
-import { LockIcon, MailIcon } from "lucide-react";
 import { z } from "zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSignIn } from "@clerk/nextjs";
@@ -23,7 +22,8 @@ import {
   FormLabel,
   FormMessage,
   Icons,
-  Input,
+  InputEmail,
+  InputPassword,
   Separator,
 } from "@/components/ui";
 import Link from "next/link";
@@ -106,16 +106,7 @@ export default function SignInPage() {
                 <FormItem>
                   <FormLabel>Email address</FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <MailIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-                      <Input
-                        {...field}
-                        type="email"
-                        className="pl-10"
-                        autoComplete="email"
-                        placeholder="mailbox@mail.com"
-                      />
-                    </div>
+                    <InputEmail {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -128,16 +119,7 @@ export default function SignInPage() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <LockIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-                      <Input
-                        type="password"
-                        autoComplete="new-password"
-                        placeholder="••••••••"
-                        className="pl-10"
-                        {...field}
-                      />
-                    </div>
+                    <InputPassword {...field} autoComplete="current-password" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
