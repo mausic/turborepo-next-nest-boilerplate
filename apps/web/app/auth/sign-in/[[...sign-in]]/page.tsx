@@ -134,6 +134,11 @@ export default function SignInPage() {
                 </FormItem>
               )}
             />
+            <Link
+              href={urlWithSearchParams("/auth/forgot-password")}
+              className="text-blue-400 underline text-sm">
+              Forgot password?
+            </Link>
             <Separator />
             <Button type="submit" disabled={isLoading}>
               {isLoading ? <Icons.spinner className="size-4 animate-spin" /> : "Sign in"}
