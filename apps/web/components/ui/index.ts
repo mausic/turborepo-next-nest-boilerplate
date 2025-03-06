@@ -9,6 +9,7 @@ export * from "./icons";
 export * from "./input";
 export * from "./input-email";
 export * from "./input-otp";
+export * from "./input-password";
 export * from "./label";
 export * from "./separator";
 export * from "./sheet";
