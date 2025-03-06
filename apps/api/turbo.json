@@ -3,7 +3,8 @@
   "tasks": {
     "dev": {
       "cache": false,
-      "env": ["PORT"]
+      "env": ["PORT"],
+      "dependsOn": ["@repo/redis#dev:prepare"]
     }
   }
 }

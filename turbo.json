@@ -15,10 +15,13 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
+    "dev:prepare": {
+      "dependsOn": ["^dev:prepare"]
+    },
     "dev": {
       "cache": false,
       "persistent": true,
-      "dependsOn": ["^dev"]
+      "dependsOn": ["dev:prepare", "^dev"]
     },
     "web#build": {
       "dependsOn": ["^build"],
