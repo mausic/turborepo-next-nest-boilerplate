@@ -6,10 +6,16 @@ import { CacheInterceptor, CacheModule } from "@nestjs/cache-manager";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 import { createKeyv, Keyv } from "@keyv/redis";
 import { CacheableMemory } from "cacheable";
+import appConfig from "@/config/app.config";
 
 @Module({
   imports: [
-    CacheModule.registerAsync({
+    ConfigModule.forRoot({
+      cache: true,
+      isGlobal: true,
+      load: [appConfig],
+    }),
+    CacheModule.register({
       isGlobal: true,
       useFactory: () => {
         return {
@@ -24,10 +30,6 @@ import { CacheableMemory } from "cacheable";
           ],
         };
       },
-    }),
-    ConfigModule.forRoot({
-      cache: true,
-      isGlobal: true,
     }),
   ],
   controllers: [AppController],
