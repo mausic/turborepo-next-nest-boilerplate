@@ -14,6 +14,12 @@ class EnvironmentVariablesValidator {
   API_PREFIX: string;
 
   @IsInt()
+  @Min(1)
+  @Max(10)
+  @IsOptional()
+  API_VERSION: number;
+
+  @IsInt()
   @Min(0)
   @Max(65535)
   @IsOptional()
@@ -28,12 +34,6 @@ class EnvironmentVariablesValidator {
   @IsEnum(Environment)
   @IsOptional()
   NODE_ENV: Environment;
-
-  @IsInt()
-  @Min(1)
-  @Max(10)
-  @IsOptional()
-  API_VERSION: number;
 }
 export default registerAs<IAppConfig>("app", () => {
   validateConfig(process.env, EnvironmentVariablesValidator);
