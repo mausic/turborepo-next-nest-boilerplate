@@ -6,14 +6,16 @@ import { CacheInterceptor, CacheModule } from "@nestjs/cache-manager";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 import { createKeyv, Keyv } from "@keyv/redis";
 import { CacheableMemory } from "cacheable";
+import { AuthModule } from "./auth/auth.module";
 import appConfig from "@/config/app.config";
+import authConfig from "@/auth/config/auth.config";
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       cache: true,
       isGlobal: true,
-      load: [appConfig],
+      load: [appConfig, authConfig],
     }),
     CacheModule.register({
       isGlobal: true,
@@ -31,6 +33,7 @@ import appConfig from "@/config/app.config";
         };
       },
     }),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [

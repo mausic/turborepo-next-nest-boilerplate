@@ -3,7 +3,15 @@
   "tasks": {
     "dev": {
       "cache": false,
-      "env": ["PORT"],
+      "env": [
+        "PORT",
+        "API_VERSION",
+        "API_PREFIX",
+        "REDIS_HOST",
+        "REDIS_PORT",
+        "JKWS_PUBLIC_KEY",
+        "JWKS_ISSUER"
+      ],
       "dependsOn": ["@repo/redis#dev:prepare"]
     }
   }

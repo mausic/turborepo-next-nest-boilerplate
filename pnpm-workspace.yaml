@@ -4,13 +4,5 @@ packages:
 catalogs:
   prisma:
     prisma: latest
-onlyBuiltDependencies:
-  - '@clerk/shared'
-  - '@nestjs/core'
-  - '@prisma/client'
-  - '@prisma/engines'
-  - '@swc/core'
-  - core-js-pure
-  - esbuild
-  - prisma
-  - sharp
+ignoredBuiltDependencies:
+  - '@scarf/scarf'

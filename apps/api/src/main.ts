@@ -7,11 +7,13 @@ import { IAllConfig } from "@/config/config.type";
 import validationOptions from "@/utils/validation-options";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { writeFileSync } from "fs";
+import cookieParser from "cookie-parser";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService<IAllConfig>);
   app.use(helmet());
+  app.use(cookieParser());
   app.enableShutdownHooks();
   app.setGlobalPrefix(configService.getOrThrow("app.apiPrefix", { infer: true }), {
     exclude: ["/"],
