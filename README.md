@@ -1,14 +1,16 @@
-# Turborepo starter
+# Tubrorepo Boilerplate with Next.js, Nest.js, Clerk, Redis, etc
 
-This Turborepo starter is maintained by the Turborepo core team.
+THIS IS A WORK IN PROGRESS!
+Use it at your own risk
 
-## Using this example
+## Using this boilerplate
 
-Run the following command:
+The philosophy of this repo is "Fork you!":
 
-```sh
-npx create-turbo@latest
-```
+1. Fork the repo
+2. Do whatever you want
+3. ...
+4. PROFIT!!!
 
 ## What's inside?
 
@@ -16,11 +18,13 @@ This Turborepo includes the following packages/apps:
 
 ### Apps and Packages
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
+- `web`: a [Next.js](https://nextjs.org/) app with a Tailwind v4 and basic shadcn/ui dashboard layout and [Clerk](https://clerk.com/) authentication [WIP]
+- `api` a [Nest.js](https://nestjs.com) app with a basic setup (clerk auth, redis caching, swagger docs) [WIP]
+- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications [WIP]
 - `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
 - `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- `@repo/db`: a [Prisma ORM](https://prisma.io/orm) database as a package that may be used in apps
+- `@repo/redis` a [Redis](https://redis.io) in-memory storage docker setup
 
 Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 
@@ -31,6 +35,12 @@ This Turborepo has some additional tools already setup for you:
 - [TypeScript](https://www.typescriptlang.org/) for static type checking
 - [ESLint](https://eslint.org/) for code linting
 - [Prettier](https://prettier.io) for code formatting
+- [Commitlint](https://commitlint.js.org/) for checking the commit messages
+- [Lint-staged](https://github.com/lint-staged/lint-staged) for checking the code you are commiting
+
+### Turbo
+
+This repo is fully configured with turbo. It means that running `turbo dev` will preconfigure all necessary development services (docker containers including) and afterwards will start all the apps.
 
 ### Build
 
@@ -72,6 +82,10 @@ Next, you can link your Turborepo to your Remote Cache by running the following 
 npx turbo link
 ```
 
+## Contribution
+
+I don't really believe that somebody will ever find this repo and will decide to contribute, but you do -> please make a PR
+
 ## Useful Links
 
 Learn more about the power of Turborepo:
@@ -82,3 +96,27 @@ Learn more about the power of Turborepo:
 - [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
 - [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
 - [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+
+## Roadmap
+
+### API
+
+- [ ] implement throttling
+- [ ] imlpement microservices via NATS
+
+### WEB
+
+- [ ] implement onboarding flow
+- [ ] implement organizations module from Clerk
+
+### UI
+
+- [ ] implement shadcn/ui package
+
+### DOCS
+
+- [ ] implement docs web app (via mintlify probably?)
+
+### Realeases
+
+- [ ] imlpement web app with releases or a notifications module?

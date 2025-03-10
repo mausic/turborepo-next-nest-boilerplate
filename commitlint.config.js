@@ -44,6 +44,9 @@ module.exports = {
         "projects", // Changes to the projects
         "web", // Changes to the web app
         "db", // Changes to the database
+        "typescript", // Changes to the TypeScript configuration files
+        "eslint", // Changes to the ESLint configuration files
+        "api", // Changes to the API app
       ],
     ],
   },

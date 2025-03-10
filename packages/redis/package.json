@@ -1,0 +1,11 @@
+{
+  "name": "@repo/redis",
+  "version": "1.0.0",
+  "description": "A Redis development package",
+  "scripts": {
+    "dev:prepare": "docker compose -f ./docker-compose.dev.yml up -d"
+  },
+  "author": "Maksym Ryndia",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@10.5.2"
+}

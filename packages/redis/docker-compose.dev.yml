@@ -1,0 +1,15 @@
+# Description: This file is used to setup a redis in the development environment.
+
+name: redis-dev
+
+services:
+  # Redis store
+  redis:
+    image: redis:7-alpine
+    restart: always
+    shm_size: 256mb
+    ports:
+      - 6380:6379
+    volumes:
+      - ./redis_data:/var/lib/redis
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
