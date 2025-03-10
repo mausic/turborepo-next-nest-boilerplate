@@ -12,7 +12,7 @@
         "JKWS_PUBLIC_KEY",
         "JWKS_ISSUER"
       ],
-      "dependsOn": ["@repo/redis#dev:prepare"]
+      "dependsOn": ["@repo/redis#dev:prepare", "@repo/db#build"]
     }
   }
 }
