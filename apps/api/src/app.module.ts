@@ -7,6 +7,7 @@ import { APP_INTERCEPTOR } from "@nestjs/core";
 import { createKeyv, Keyv } from "@keyv/redis";
 import { CacheableMemory } from "cacheable";
 import { AuthModule } from "./auth/auth.module";
+import { UsersModule } from "./users/users.module";
 import appConfig from "@/config/app.config";
 import authConfig from "@/auth/config/auth.config";
 
@@ -34,6 +35,7 @@ import authConfig from "@/auth/config/auth.config";
       },
     }),
     AuthModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [

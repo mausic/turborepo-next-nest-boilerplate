@@ -1,20 +1,10 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import { Cache } from "cache-manager";
+import { type Cache } from "cache-manager";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { IAllConfig } from "@/config/config.type";
-
-type IJwtDecodedToken = {
-  azp: string;
-  exp: number;
-  iat: number;
-  iss: string;
-  jti: string;
-  nbf: number;
-  sub: string;
-  metadata: unknown;
-};
+import { type IJwtDecodedToken } from "@/utils/types/jwt-decoded-token";
 
 @Injectable()
 export class AuthService {
@@ -27,7 +17,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async validateToken(token: string): Promise<boolean> {
+  async validateToken(token: string): Promise<IJwtDecodedToken> {
     this.logger.debug("Validating token");
     let decodedToken: IJwtDecodedToken;
     // check whether the token is stored in the cache
@@ -67,6 +57,6 @@ export class AuthService {
     // store the token in the cache until its expiration time
     const cacheTtl = (decodedToken.exp - currentTime) * 1000;
     await this.cacheManager.set(cacheTokenId, decodedToken, cacheTtl);
-    return true;
+    return decodedToken;
   }
 }
