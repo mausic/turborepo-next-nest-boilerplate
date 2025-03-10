@@ -19,7 +19,7 @@ This Turborepo includes the following packages/apps:
 ### Apps and Packages
 
 - `web`: a [Next.js](https://nextjs.org/) app with a Tailwind v4 and basic shadcn/ui dashboard layout and [Clerk](https://clerk.com/) authentication [WIP]
-- `api` a [Nest.js](https://nestjs.com) app with a basic setup (clerk auth, redis caching) [WIP]
+- `api` a [Nest.js](https://nestjs.com) app with a basic setup (clerk auth, redis caching, swagger docs) [WIP]
 - `@repo/ui`: a stub React component library shared by both `web` and `docs` applications [WIP]
 - `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
 - `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
